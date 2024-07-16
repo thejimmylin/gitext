@@ -91,6 +91,8 @@ def activate_profile(email, path=SSH_DIR / "gittool-profiles.json"):
     subprocess.run(["git", "config", "--global", "user.name", profiles[email]["name"]])
     subprocess.run(["git", "config", "--global", "user.email", email])
 
+    print(f"Activated profile for {email}")
+
 
 def generate_ssh_key(email):
     path = SSH_DIR / email / "id_ed25519"
@@ -116,6 +118,13 @@ def cli(action: str, email: str, name: str = ""):
 
     if action == "activate":
         return activate_profile(email)
+
+    if action == "use":
+        # Work like activate but with fuzzy email matching
+        all_emails = read_profiles().keys()
+        for e in all_emails:
+            if e.startswith(email):
+                return activate_profile(e)
 
     raise ValueError(f"Invalid action: {action}")
 
