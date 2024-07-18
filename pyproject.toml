@@ -1,7 +1,7 @@
 [project]
 name = "gittool"
-version = "0.1.6"
-description = "Default template for PDM package"
+version = "0.1.7"
+description = "Git tool"
 authors = [
     {name = "Jimmy Lin", email = "b00502013@gmail.com"},
 ]
@@ -11,7 +11,7 @@ readme = "README.md"
 license = {text = "MIT"}
 
 [project.scripts]
-gittool = "gittool.use:cli"
+gittool-use = "gittool.use:cli"
 
 [build-system]
 requires = ["pdm-backend"]
