@@ -5,8 +5,7 @@ import shutil
 import subprocess
 from typing import Literal
 
-SSH_DIR = pathlib.Path.home() / ".ssh"
-PROFILES_PATH = pathlib.Path.home() / ".gittool-profiles.json"
+from rich.console import Console
 
 __all__ = [
     "create_profile",
@@ -17,6 +16,16 @@ __all__ = [
     "generate_ssh_key",
     "cli",
 ]
+
+SSH_DIR = pathlib.Path.home() / ".ssh"
+PROFILES_PATH = pathlib.Path.home() / ".gittool-profiles.json"
+
+
+console = Console()
+
+
+def print(message: str):
+    console.print(message, style="bold")
 
 
 def create_profile(email: str, name: str, path=PROFILES_PATH):
@@ -185,6 +194,8 @@ def cli():
                 return print("Email is required for create action")
             if not name:
                 return print("Name is required for create action")
+            if email in read_profiles():
+                return print(f"Profile {email} already exists")
 
             create_profile(email, name)
             print(f"Created profile {name} <{email}>")
