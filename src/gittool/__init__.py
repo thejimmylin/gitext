@@ -1,41 +1,22 @@
-"""Control Git config, SSH keys, and commit signing keys for multiple Git profiles.
-
-Command Examples:
-    python main.py create b00502013@gmail.com "Jimmy Lin"
-    python main.py create jimmy@refl.ai
-    python main.py update jimmy@refl.ai --name="Jimmy"
-    python main.py activate b00502013@gmail
-    python main.py activate jimmy@refl.ai
-    python main.py delete b00502013@gmail.com
-"""
-
-import datetime
+import argparse
 import json
 import pathlib
-import subprocess
 import shutil
-import typer
+import subprocess
+from typing import Literal
 
 SSH_DIR = pathlib.Path.home() / ".ssh"
+PROFILES_PATH = pathlib.Path.home() / ".gittool-profiles.json"
 
 
-def read_profiles(path=SSH_DIR / "gittool-profiles.json"):
-    if not path.exists():
-        path.write_text(json.dumps({}, indent=2))
-
-    return json.loads(path.read_text())
-
-
-def create_profile(email, name, path=SSH_DIR / "gittool-profiles.json"):
+def create_profile(email: str, name: str, path=PROFILES_PATH):
     profiles = read_profiles(path)
     if email in profiles:
-        raise ValueError(f"Profile for {email} already exists")
+        raise ValueError(f"Profile {email} already exists")
 
-    utc_now = datetime.datetime.now(datetime.timezone.utc)
     profiles[email] = {
         "name": name,
         "activated": False,
-        "created_at": str(utc_now),
     }
 
     path.write_text(json.dumps(profiles, indent=2))
@@ -43,10 +24,17 @@ def create_profile(email, name, path=SSH_DIR / "gittool-profiles.json"):
     generate_ssh_key(email)
 
 
-def update_profile(email, name, path=SSH_DIR / "gittool-profiles.json"):
+def read_profiles(path=PROFILES_PATH):
+    if not path.exists():
+        path.write_text(json.dumps({}, indent=2))
+
+    return json.loads(path.read_text())
+
+
+def update_profile(email: str, name: str, path=PROFILES_PATH):
     profiles = read_profiles(path)
     if email not in profiles:
-        raise ValueError(f"Profile for {email} does not exist")
+        raise ValueError(f"Profile {email} not found")
 
     profiles[email]["name"] = name
 
@@ -56,25 +44,25 @@ def update_profile(email, name, path=SSH_DIR / "gittool-profiles.json"):
         subprocess.run(["git", "config", "--global", "user.name", name])
 
 
-def delete_profile(email, path=SSH_DIR / "gittool-profiles.json"):
+def delete_profile(email: str, path=PROFILES_PATH, ssh_dir=SSH_DIR):
     profiles = read_profiles(path)
     if email not in profiles:
-        raise ValueError(f"Profile for {email} does not exist")
+        raise ValueError(f"Profile {email} not found")
 
     if profiles[email]["activated"]:
-        raise ValueError(f"Profile for {email} is currently activated")
+        raise ValueError(f"Profile {email} is currently activated")
 
     del profiles[email]
 
     path.write_text(json.dumps(profiles, indent=2))
 
-    shutil.rmtree(SSH_DIR / email, ignore_errors=True)
+    shutil.rmtree(ssh_dir / email, ignore_errors=True)
 
 
-def activate_profile(email, path=SSH_DIR / "gittool-profiles.json"):
+def activate_profile(email: str, path=PROFILES_PATH, ssh_dir=SSH_DIR):
     profiles = read_profiles(path)
     if email not in profiles:
-        raise ValueError(f"Profile for {email} does not exist")
+        raise ValueError(f"Profile for {email} not found")
 
     for profile in profiles.values():
         profile["activated"] = False
@@ -83,49 +71,110 @@ def activate_profile(email, path=SSH_DIR / "gittool-profiles.json"):
     path.write_text(json.dumps(profiles, indent=2))
 
     subprocess.run(
-        ["cp", str(SSH_DIR / email / "id_ed25519"), str(SSH_DIR / "id_ed25519")]
+        ["cp", str(ssh_dir / email / "id_ed25519"), str(ssh_dir / "id_ed25519")]
     )
     subprocess.run(
-        ["cp", str(SSH_DIR / email / "id_ed25519.pub"), str(SSH_DIR / "id_ed25519.pub")]
+        ["cp", str(ssh_dir / email / "id_ed25519.pub"), str(ssh_dir / "id_ed25519.pub")]
     )
     subprocess.run(["git", "config", "--global", "user.name", profiles[email]["name"]])
     subprocess.run(["git", "config", "--global", "user.email", email])
 
-    print(f"Activated profile for {email}")
 
-
-def generate_ssh_key(email):
-    path = SSH_DIR / email / "id_ed25519"
+def generate_ssh_key(email: str, ssh_dir=SSH_DIR):
+    path = ssh_dir / email / "id_ed25519"
     path.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(
         ["ssh-keygen", "-t", "ed25519", "-N", "", "-C", email, "-f", str(path), "-q"]
     )
 
 
-def cli(action: str, email: str, name: str = ""):
+def cli():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("email", nargs="?", help="Email address for the Git profile")
+    parser.add_argument("name", nargs="?", help="Name for the Git profile")
+    parser.add_argument(
+        "--delete", "-d", action="store_true", help="Delete the Git profile"
+    )
+    parser.add_argument(
+        "--update-name", "-u", action="store_true", help="Update the Git profile name"
+    )
+    args = parser.parse_args()
 
-    if name == "":
-        name = email
+    specified_action: Literal["delete", "update_name", "auto"]
+    if args.delete and args.update_name:
+        raise ValueError("Cannot delete and update profile at the same time")
+    elif args.delete:
+        specified_action = "delete"
+    elif args.update_name:
+        specified_action = "update_name"
+    else:
+        specified_action = "auto"
 
-    if action == "create":
-        return create_profile(email, name)
+    action: Literal["delete", "update_name", "show", "activate", "create"]
+    if specified_action == "auto":
+        if not args.email:
+            action = "show"
+        elif not args.name:
+            action = "activate"
+        else:
+            action = "create"
+    else:
+        action = specified_action
 
-    if action == "update":
-        return update_profile(email, name)
+    email, name = args.email, args.name
 
-    if action == "delete":
-        return delete_profile(email)
+    match action:
+        case "delete":
+            if not email:
+                return print("Email is required for delete action")
+            if not email in read_profiles():
+                return print(f"Profile {email} not found")
 
-    if action == "activate":
-        return activate_profile(email)
+            delete_profile(email)
+            print(f"Deleted profile {email}")
 
-    if action == "use":
-        # Work like activate but with fuzzy email matching
-        all_emails = read_profiles().keys()
-        for e in all_emails:
-            if e.startswith(email):
-                return activate_profile(e)
+        case "update_name":
+            if not email:
+                return print("Email is required for update_name action")
+            if not name:
+                return print("Name is required for update_name action")
+            if not email in read_profiles():
+                return print(f"Profile {email} not found")
 
-        raise ValueError(f"Profile with email like {email} does not exist")
+            update_profile(email, name)
+            print(f"Updated profile {email} as {name} <{email}>")
 
-    raise ValueError(f"Invalid action: {action}")
+        case "show":
+            profiles = read_profiles()
+            if not profiles:
+                return print("No profiles")
+
+            for email, profile in profiles.items():
+                if profile["activated"]:
+                    print(f"{profile['name']} <{email}>")
+
+        case "activate":
+            if not email:
+                return print("Email is required for activate action")
+
+            if email in read_profiles():
+                activate_profile(email)
+            else:
+                email: str
+                for _email, profile in read_profiles().items():
+                    if email in _email:
+                        email = _email
+                        activate_profile(email)
+                        print(f"{profile['name']} <{email}>")
+                        break
+                else:
+                    return print(f"Profile {email} not found")
+
+        case "create":
+            if not email:
+                return print("Email is required for create action")
+            if not name:
+                return print("Name is required for create action")
+
+            create_profile(email, name)
+            print(f"Created profile {name} <{email}>")
