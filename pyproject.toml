@@ -1,12 +1,12 @@
 [project]
 name = "gittool"
-version = "0.1.0"
+version = "0.1.6"
 description = "Default template for PDM package"
 authors = [
     {name = "Jimmy Lin", email = "b00502013@gmail.com"},
 ]
 dependencies = []
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "MIT"}
 
