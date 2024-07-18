@@ -1,6 +1,6 @@
 # Gittool
 
-## `git use`
+## gittool-use (`git use`)
 
 Control Git config, SSH keys, and commit signing keys for multiple Git profiles.
 
@@ -17,7 +17,7 @@ You may run it using `pipx`, but usually you want to set it as a `git` alias
 ...
 ```
 
-You run it with `pipx`
+You then run it with `git use`
 
 ```sh
 # Create a new profile, including a new SSH key
