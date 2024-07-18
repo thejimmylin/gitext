@@ -1,0 +1,21 @@
+[project]
+name = "gittool"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "Jimmy Lin", email = "b00502013@gmail.com"},
+]
+dependencies = []
+requires-python = ">=3.12"
+readme = "README.md"
+license = {text = "MIT"}
+
+[project.scripts]
+gittool = "gittool.use:cli"
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm]
+distribution = true
