@@ -188,3 +188,7 @@ def cli():
 
             create_profile(email, name)
             print(f"Created profile {name} <{email}>")
+
+
+if __name__ == "__main__":
+    cli()
