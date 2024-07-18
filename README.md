@@ -1,10 +1,12 @@
 # Gittool
 
+## `git use`
+
 Control Git config, SSH keys, and commit signing keys for multiple Git profiles.
 
 https://github.com/user-attachments/assets/9fc20bea-6a79-426e-8858-085109a729f5
 
-# How to use
+### How to use
 
 You may run it using `pipx`, but usually you want to set it as a `git` alias
 
