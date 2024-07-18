@@ -146,12 +146,14 @@ def cli():
         case "delete":
             if not email:
                 return print("Email is required for delete action")
-            if not email in read_profiles():
+            profile = read_profiles().get(email)
+            if not profile:
                 return print(f"Profile {email} not found")
-
-            name = read_profiles()[email]["name"]
+            if profile["activated"]:
+                return print(f"Profile {name} <{email}> is currently activated")
+            
             delete_profile(email)
-            print(f"Deleted profile {name} <{email}>")
+            print(f"Deleted profile {profile['name']} <{email}>")
 
         case "update_name":
             if not email:
