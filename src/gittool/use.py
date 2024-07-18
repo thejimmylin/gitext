@@ -8,6 +8,16 @@ from typing import Literal
 SSH_DIR = pathlib.Path.home() / ".ssh"
 PROFILES_PATH = pathlib.Path.home() / ".gittool-profiles.json"
 
+__all__ = [
+    "create_profile",
+    "read_profiles",
+    "update_profile",
+    "delete_profile",
+    "activate_profile",
+    "generate_ssh_key",
+    "cli",
+]
+
 
 def create_profile(email: str, name: str, path=PROFILES_PATH):
     profiles = read_profiles(path)
