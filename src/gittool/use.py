@@ -21,11 +21,11 @@ SSH_DIR = pathlib.Path.home() / ".ssh"
 PROFILES_PATH = pathlib.Path.home() / ".gittool-profiles.json"
 
 
-console = Console()
+console = Console(style="black", no_color=True)
 
 
 def print(message: str):
-    console.print(message, style="bold")
+    console.print(message)
 
 
 def create_profile(email: str, name: str, path=PROFILES_PATH):
@@ -149,8 +149,9 @@ def cli():
             if not email in read_profiles():
                 return print(f"Profile {email} not found")
 
+            name = read_profiles()[email]["name"]
             delete_profile(email)
-            print(f"Deleted profile {email}")
+            print(f"Deleted profile {name} <{email}>")
 
         case "update_name":
             if not email:
@@ -161,16 +162,20 @@ def cli():
                 return print(f"Profile {email} not found")
 
             update_profile(email, name)
-            print(f"Updated profile {email} as {name} <{email}>")
+            print(f"Updated profile as {name} <{email}>")
 
         case "show":
             profiles = read_profiles()
             if not profiles:
                 return print("No profiles")
 
+            lines = []
             for email, profile in profiles.items():
                 if profile["activated"]:
-                    print(f"{profile['name']} <{email}>")
+                    lines.insert(0, f"* {profile['name']} <{email}>")
+                else:
+                    lines.append(f"{profile['name']} <{email}>")
+            print("\n".join(lines))
 
         case "activate":
             if not email:
@@ -178,6 +183,8 @@ def cli():
 
             if email in read_profiles():
                 activate_profile(email)
+                name = read_profiles()[email]["name"]
+                print(f"{name} <{email}>")
             else:
                 email: str
                 for _email, profile in read_profiles().items():

@@ -1,6 +1,6 @@
 [project]
 name = "gittool"
-version = "0.1.8"
+version = "0.1.9"
 description = "Git tool"
 authors = [
     {name = "Jimmy Lin", email = "b00502013@gmail.com"},
