@@ -1,6 +1,3 @@
-.venv
 .DS_Store
 .idea
-dist
-.pdm-python
-__pycache__
+node_modules

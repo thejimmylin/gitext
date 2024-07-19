@@ -1,19 +1,19 @@
-# Gittool
+# gitext
 
-## gittool-use (`git use`)
+## gitext's `use` (`git use`)
 
 Control Git config, SSH keys, and commit signing keys for multiple Git profiles.
 
 https://github.com/user-attachments/assets/9fc20bea-6a79-426e-8858-085109a729f5
 
-### How to use
+### How to use `use`
 
 You may run it using `pipx`, but usually you want to set it as a `git` alias
 
 ```sh
 ...
 [alias]
-	use = "!pipx run --spec gittool==0.1.10 gittool-use"
+	use = "!npx gitext@latest use"
 ...
 ```
 
@@ -42,10 +42,14 @@ Jimmy <contact@jimmylin.org>
 Created profile Jimmy Lin <b005020132@gmail.com>
 
 # Delete a profile
-> git use -d b00502013@gmail.com
+> git use b00502013@gmail.com -d
 Deleted profile Jimmy Lin <b005020132@gmail.com>
 
 # Update profile name (`git`'s `user.name`)
-> git use -u b00502013@gmail.com 'JL'
+> git use b00502013@gmail.com 'JL' -u
 Updated profile as JL <b00502013@gmail.com>
 ```
+
+# Known issues
+
+- `-u`, `-d` can only be placed at the end of the command

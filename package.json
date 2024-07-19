@@ -1,0 +1,22 @@
+{
+  "name": "gitext",
+  "type": "module",
+  "version": "1.0.10",
+  "bin": {
+    "cli": "src/bin/cli.ts"
+  },
+  "description": "gitext",
+  "main": "src/lib/index.ts",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "tsx": "^4.16.2",
+    "zx": "^8.1.4"
+  }
+}
