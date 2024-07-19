@@ -13,7 +13,7 @@ You may run it using `pipx`, but usually you want to set it as a `git` alias
 ```sh
 ...
 [alias]
-	use = "!npx gitext@latest use"
+	use = npx gitext@1.0.11 use
 ...
 ```
 
