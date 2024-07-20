@@ -17,7 +17,7 @@ export async function generateSshKey(email: string) {
     await fs.mkdir(dir, { recursive: true });
   }
   const file = path.join(HOME, ".ssh", email, "id_ed25519");
-  return await $`ssh-keygen -t ed25519 -N "" "-C" my-email@gmail.com -f ${file}`;
+  return await $`ssh-keygen -t ed25519 -N "" "-C" ${email} -f ${file}`;
 }
 
 export async function createProfile(email: string, name: string, profilesPath: string = PROFILES_PATH) {
